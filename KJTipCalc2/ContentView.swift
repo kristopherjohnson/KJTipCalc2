@@ -12,7 +12,7 @@ import SwiftUI
 struct ContentView : View {
     var body: some View {
         // Center the TipCalcView horizontally and position it
-        // near the top of the display.
+        // at the top of the display.
         HStack {
             Spacer()
             VStack {
@@ -62,25 +62,30 @@ private struct MiddleTextField : View {
 }
 
 private struct TipCalcView : View {
-    @State private var subtotalText = "12.34"
-    
     @State private var subtotal = 20.00
     @State private var tipPercentage = 18
     @State private var numberInParty = 1
     
-    var isValidSubtotal: Bool {
+    private static let formatter = NumberFormatter()
+    
+    private let minTipPercentage = 1
+    private let maxTipPercentage = 50
+    private let minNumberInParty = 1
+    private let maxNumberInParty = 20
+    
+    private var isValidSubtotal: Bool {
         subtotal > 0.0
     }
     
-    var tip: Double {
+    private var tip: Double {
         subtotal * Double(tipPercentage) / 100.0
     }
     
-    var total: Double {
+    private var total: Double {
         subtotal + tip
     }
     
-    var perPerson: Double {
+    private var perPerson: Double {
         total / Double(numberInParty)
     }
     
@@ -89,9 +94,9 @@ private struct TipCalcView : View {
             HStack {
                 LeftText(content: "Subtotal")
                 
-                TextField($subtotalText,
+                TextField($subtotal,
                           placeholder: Text("Price"),
-                          onEditingChanged: { _ in })
+                          formatter: TipCalcView.formatter)
                     .font(.headline)
                     .textFieldStyle(.roundedBorder)
                     .multilineTextAlignment(.trailing)
@@ -112,7 +117,6 @@ private struct TipCalcView : View {
                 Stepper(onIncrement: onIncrementTipPercentage,
                         onDecrement: onDecrementTipPercentage,
                         label: { EmptyView() })
-                
                 Spacer()
             }
             
@@ -123,7 +127,6 @@ private struct TipCalcView : View {
                 Stepper(onIncrement: onIncrementNumberInParty,
                         onDecrement: onDecrementNumberInParty,
                         label: { EmptyView() })
-                
                 Spacer()
             }
             
@@ -131,9 +134,8 @@ private struct TipCalcView : View {
             
             HStack {
                 LeftText(content: "Tip")
-                MiddleTextField(content: isValidSubtotal
-                    ? String(format: "%.2f", tip)
-                    : " ")
+                MiddleTextField(content:
+                    isValidSubtotal ? String(format: "%.2f", tip) : " ")
                     .layoutPriority(1)
                 Spacer()
             }
@@ -141,9 +143,8 @@ private struct TipCalcView : View {
             
             HStack {
                 LeftText(content: "Total")
-                MiddleTextField(content: isValidSubtotal
-                    ? String(format: "%.2f", total)
-                    : " ")
+                MiddleTextField(content:
+                    isValidSubtotal ? String(format: "%.2f", total) : " ")
                     .layoutPriority(1)
                 Spacer()
             }
@@ -151,9 +152,8 @@ private struct TipCalcView : View {
             
             HStack {
                 LeftText(content: "Per person")
-                MiddleTextField(content: isValidSubtotal
-                    ? String(format: "%.2f", perPerson)
-                    : " ")
+                MiddleTextField(content:
+                    isValidSubtotal ? String(format: "%.2f", perPerson) : " ")
                     .layoutPriority(1)
                 Spacer()
             }
@@ -164,29 +164,29 @@ private struct TipCalcView : View {
     }
     
     private func onClearSubtotal() {
-        subtotalText = ""
+        subtotal = 0.0
     }
     
     private func onIncrementTipPercentage() {
-        if tipPercentage < 100 {
+        if tipPercentage < maxTipPercentage {
             tipPercentage += 1
         }
     }
     
     private func onDecrementTipPercentage() {
-        if tipPercentage > 1 {
+        if tipPercentage > minTipPercentage {
             tipPercentage -= 1
         }
     }
     
     private func onIncrementNumberInParty() {
-        if numberInParty < 20 {
+        if numberInParty < maxTipPercentage {
             numberInParty += 1
         }
     }
     
     private func onDecrementNumberInParty() {
-        if numberInParty > 1 {
+        if numberInParty > minTipPercentage {
             numberInParty -= 1
         }
     }
