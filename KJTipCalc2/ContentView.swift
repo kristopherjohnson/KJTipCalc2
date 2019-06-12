@@ -46,15 +46,16 @@ private struct LeftText : View {
     }
 }
 
-/// Right-justified bold text displayed in the middle column
-private struct MiddleText : View {
+/// Right-justified read-only text displayed in the middle column
+private struct MiddleTextField : View {
     let content: String
     
     var body: some View {
         HStack {
             Spacer()
-            Text(content)
-                .bold()
+            TextField(.constant(content))
+                .font(.headline)
+                .multilineTextAlignment(.trailing)
         }
         .frame(width: middleColumnWidth)
     }
@@ -62,13 +63,27 @@ private struct MiddleText : View {
 
 private struct TipCalcView : View {
     @State private var subtotalText = "12.34"
-    @State private var tipPercentageText = "18"
-    @State private var numberInPartyText = "1"
     
-    private var tip = "0.00"
-    private var total = "0.00"
-    private var perPerson = "0.00"
-
+    @State private var subtotal = 20.00
+    @State private var tipPercentage = 18
+    @State private var numberInParty = 1
+    
+    var isValidSubtotal: Bool {
+        subtotal > 0.0
+    }
+    
+    var tip: Double {
+        subtotal * Double(tipPercentage) / 100.0
+    }
+    
+    var total: Double {
+        subtotal + tip
+    }
+    
+    var perPerson: Double {
+        total / Double(numberInParty)
+    }
+    
     var body: some View {
         VStack {
             HStack {
@@ -77,11 +92,13 @@ private struct TipCalcView : View {
                 TextField($subtotalText,
                           placeholder: Text("Price"),
                           onEditingChanged: { _ in })
+                    .font(.headline)
                     .textFieldStyle(.roundedBorder)
                     .multilineTextAlignment(.trailing)
                     .frame(width: middleColumnWidth)
+                    .layoutPriority(1)
 
-                Button(action: {}) {
+                Button(action: onClearSubtotal) {
                     Text("Clear")
                 }
                 
@@ -90,16 +107,10 @@ private struct TipCalcView : View {
             
             HStack {
                 LeftText(content: "Tip %")
-                
-                TextField($tipPercentageText,
-                          placeholder: Text("Tip %"),
-                          onEditingChanged: { _ in })
-                    .textFieldStyle(.roundedBorder)
-                    .multilineTextAlignment(.trailing)
-                    .frame(width: middleColumnWidth)
-                
-                Stepper(onIncrement: {},
-                        onDecrement: {},
+                MiddleTextField(content: "\(tipPercentage)")
+                    .layoutPriority(1)
+                Stepper(onIncrement: onIncrementTipPercentage,
+                        onDecrement: onDecrementTipPercentage,
                         label: { EmptyView() })
                 
                 Spacer()
@@ -107,16 +118,10 @@ private struct TipCalcView : View {
             
             HStack {
                 LeftText(content: "Party of")
-                
-                TextField($numberInPartyText,
-                          placeholder: Text("Count"),
-                          onEditingChanged: { _ in })
-                    .textFieldStyle(.roundedBorder)
-                    .multilineTextAlignment(.trailing)
-                    .frame(width: middleColumnWidth)
-                
-                Stepper(onIncrement: {},
-                        onDecrement: {},
+                MiddleTextField(content: "\(numberInParty)")
+                    .layoutPriority(1)
+                Stepper(onIncrement: onIncrementNumberInParty,
+                        onDecrement: onDecrementNumberInParty,
                         label: { EmptyView() })
                 
                 Spacer()
@@ -126,27 +131,64 @@ private struct TipCalcView : View {
             
             HStack {
                 LeftText(content: "Tip")
-                MiddleText(content: tip)
+                MiddleTextField(content: isValidSubtotal
+                    ? String(format: "%.2f", tip)
+                    : " ")
+                    .layoutPriority(1)
                 Spacer()
             }
             .padding(.top)
             
             HStack {
                 LeftText(content: "Total")
-                MiddleText(content: total)
+                MiddleTextField(content: isValidSubtotal
+                    ? String(format: "%.2f", total)
+                    : " ")
+                    .layoutPriority(1)
                 Spacer()
             }
             .padding(.top)
             
             HStack {
                 LeftText(content: "Per person")
-                MiddleText(content: perPerson)
+                MiddleTextField(content: isValidSubtotal
+                    ? String(format: "%.2f", perPerson)
+                    : " ")
+                    .layoutPriority(1)
                 Spacer()
             }
             .padding(.top)
         }
         .padding(.leading)
         .frame(width: frameWidth)
+    }
+    
+    private func onClearSubtotal() {
+        subtotalText = ""
+    }
+    
+    private func onIncrementTipPercentage() {
+        if tipPercentage < 100 {
+            tipPercentage += 1
+        }
+    }
+    
+    private func onDecrementTipPercentage() {
+        if tipPercentage > 1 {
+            tipPercentage -= 1
+        }
+    }
+    
+    private func onIncrementNumberInParty() {
+        if numberInParty < 20 {
+            numberInParty += 1
+        }
+    }
+    
+    private func onDecrementNumberInParty() {
+        if numberInParty > 1 {
+            numberInParty -= 1
+        }
     }
 }
 
